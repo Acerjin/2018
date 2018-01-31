@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block topAd %}
+	<img src="/static/img/banner_index.jpg" width="930" height="235" />
+{% endblock %}
+{% load functionTag %}
+{% block main %}
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+     <tr>
+       <td width="239" align="left" valign="top" style="padding-left:12px;">
+       <table width="203" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:14px;">
+           <tr>
+             <td><img src="/static/img/main/header_news.gif" width="203" height="45" /></td>
+           </tr>
+           {% display_index_announce_widget %}
+           <tr>
+             <td><img src="/static/img/main/footer.gif" width="203" height="9" /></td>
+           </tr>
+       </table>
+       {%display_index_recent_faqs%}
+       </td>
+       <td width="426" valign="top">
+	       {%display_index_news_widget%}
+       </td>
+       <td width="290" align="right" valign="top" class="ourproducts">
+        {% display_products_widget %}
+       </td>
+     </tr>
+ </table>
+{% endblock %}

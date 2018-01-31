@@ -1,0 +1,21 @@
+<!-- google -->
+        <div id="nuffneng" class="sidepanel" style="margin-bottom:10px;"> 
+        	<h4 class="Ptitle">SPONSOR</h4>       	
+        	<div class="Pcontent">
+        	
+					 	  <script type="text/javascript"><!--
+							google_ad_client = "ca-pub-8938429428345245";
+							/* 250-250首页 */
+							google_ad_slot = "7558194249";
+							google_ad_width = 250;
+							google_ad_height = 250;
+							//-->
+							</script>
+							<script type="text/javascript"
+							src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+							</script>
+        	
+             </div>
+          <div class="Pfoot"></div>
+        </div>        
+        <!-- end google -->

@@ -1,0 +1,36 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td><img src="/static/img/main/news.gif" width="131" height="41" /></td>
+  </tr>
+  <tr>
+    <td background="/static/img/dot_white.gif"><img src="/static/img/blank.gif" width="1" height="1" /></td>
+  </tr>
+  {%for item in news%}
+  <tr>
+    <td><table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td width="69"><img src="/static/img/main/center_{{forloop.counter}}.gif" width="69" height="72" /></td>
+        <td style="line-height:18px;"><strong><a href="/news/{{item.id}}">{{item.title}}</a></strong><br />
+            {{item.content|slice:":50"}}...
+        </td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td background="/static/img/dot_white.gif"><img src="/static/img/blank.gif" width="1" height="1" /></td>
+  </tr>
+  {%endfor%} 
+  <tr>
+    <td height="30">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><a href="/about"><img src="/static/img/main/center_overview.gif" width="273" height="55" border="0" /></a></td>
+  </tr>
+  <tr>
+    <td style="padding:0 23px 0 13px;">
+    {{about.content|slice:":200"}}
+    <br />
+    <a href="/about/{{about.catid}}" class="arial_12_orange_a">了解更多</a> 
+    </td>
+  </tr>
+</table>

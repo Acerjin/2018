@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>{{webname}}</title>
+<link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table width="954" border="0" align="center" cellpadding="0" cellspacing="0" class="container">
+  <tr>
+    <td align="left" valign="top" style="display:block;" id ="menu">
+    	<table width="100%">
+    		<tr>
+    			<td width="150">
+    			</td>
+    			<td>
+			    	<ul id="menu">
+			    		<li><a href="/">首页</a></li>
+			    		<li><a href="/product">产品介绍</a></li>
+			    		<li><a href="/service">服务支持</a></li>
+			    		<li><a href="/download">资料下载</a></li>
+			    		<li><a href="/faq">常见问题</a></li>
+			    		<li><a href="/about">关于我们</a></li>
+			    	</ul>
+    	    </td>
+    	    <td align="right" style="padding-right:10px;">
+    	          <b> 业务专线  </b>&nbsp;: 13726206588
+    	    </td>
+    	 </tr> 
+    	</table>   	
+    </td>
+  </tr>
+  <tr>
+    <td height="243" align="center" valign="top">
+        {% block topAd %}
+	   
+	    {% endblock %}
+    </td>
+  </tr>
+  <tr>
+    <td>
+     {% block main %}
+     
+     {% endblock %}
+    </td>
+  </tr>
+  <tr style="height:30px;">
+  
+  </tr>  
+</table>
+
+<table width="954px" border="0" cellspacing="0" cellpadding="0" align="center" style="background-color: #272e31;">
+  <tr>
+    <td width="9"></td>
+    <td>
+      <div style="margin-top:10px;margin-bottom:10px;">
+        <label class="mylink">收银软件系列:</label>
+        <a href="#" class="mylink">免费pos系统</a>&nbsp;
+        <a href="#" class="mylink">免费商场POS系统</a>&nbsp;
+        <a href="#" class="mylink">免费超市POS系统</a>&nbsp;
+        <a href="#" class="mylink">服装POS系统</a>&nbsp;
+        <a href="#" class="mylink">专卖店POS系统</a>&nbsp;
+        <a href="#" class="mylink">免费收银软件</a>&nbsp;
+        <br />
+        <label class="mylink"> Copyright 2012-2013 yihaomen Limited. All right reserved.</label>
+       
+      </div>
+    </td>
+    <td align="right">Powered by yihaomen.com</td>
+    <td width="9"></td>
+  </tr>
+</table>
+
+</body>
+</html>

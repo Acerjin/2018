@@ -1,0 +1,27 @@
+-- VERSION_4
+-- START DISKCACHE_2
+E:\pythondev\.metadata\.plugins\org.eclipse.core.resources\.projects\NJ\com.python.pydev.analysis\v2_indexcache
+NJ.NJFX.admin|1510713317945332000|E:\pythondev\NJ\NJ\NJFX\admin.py
+-- END DISKCACHE
+-- START DICTIONARY
+6
+5=PzAdmin
+1=NJ.NJFX.admin
+2=WdcpAdmin
+6=CtglAdmin
+3=TzqkfxAdmin
+4=NjzhAdmin
+-- END DICTIONARY
+-- START TREE 1
+5
+ctg|1|CtglAdmin!9@
+njz|1|NjzhAdmin!9@
+pza|1|PzAdmin!9@
+tzq|1|TzqkfxAdmin!9@
+wdc|1|WdcpAdmin!9@
+-- END TREE
+-- START TREE 2
+2
+fie|5|fields!2&11@fields!3&11@fields!4&11@fields!5&11@fields!6&11@
+lis|3|list_display!2&11@list_display!3&11@list_display!6&11@
+-- END TREE

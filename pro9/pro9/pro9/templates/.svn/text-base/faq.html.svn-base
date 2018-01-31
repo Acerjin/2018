@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load functionTag %}
+{% block topAd %}
+    <img src="/static/img/faq/banner01.jpg" width="310" height="235" /><img src="/static/img/faq/banner02.jpg" width="297" height="235" /><img src="/static/img/faq/banner03.jpg" width="321" height="235" /></td>
+{% endblock %}
+
+{% block main %}
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+     <tr>
+       <td width="193" align="left" valign="top">
+         {% display_faq_category_widget %}
+       </td>
+       
+       <td width="470" valign="top">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+         <tr>
+           <td><strong>FAQ-{{catname}}</strong></td>
+         </tr>
+         <tr>
+           <td background="/static/img/dot_white.gif"><img src="/static/img/blank.gif" width="1" height="1" /></td>
+         </tr>
+         <tr>
+           <td class="content"><img src="/static/img/faq/pic01.jpg" align="right" />
+             {%for item in faqs%}
+             <p><span class="arial_18_gray_blod">{{item.title}}</span><br />
+               <pre>{{item.content|safe}} </pre>
+             </p> 
+             {%endfor%}    
+           </td>
+         </tr>
+         
+       </table>
+       </td>
+      
+       <td align="right" valign="top" class="ourproducts">
+        {% display_products_widget %}
+       </td>
+       
+     </tr>
+</table>
+{% endblock %}

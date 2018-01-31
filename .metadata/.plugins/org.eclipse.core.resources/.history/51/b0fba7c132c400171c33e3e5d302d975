@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+
+from django.contrib import admin
+from .models import *
+# Register your models here.
+class WdcpAdmin(admin.ModelAdmin): 
+    fields = ['zh','pz','mc','je','zhzb','rzzt','ztpj','zxpj','qx','syl','pzrq','dqrq','synx','lshzj','by1']
+    #def __init__(self, *args, **kwargs):
+       # self.fields['zh'].queryset = Zh.objects.all()
+
+class ZhAdmin(admin.ModelAdmin): 
+    fields = ['zh','zhje']
+class PzAdmin(admin.ModelAdmin): 
+    fields = ['pz']
+admin.site.register(Wdcp,WdcpAdmin)
+admin.site.register(Zh,ZhAdmin)
+admin.site.register(Pz,PzAdmin)

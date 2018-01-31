@@ -1,0 +1,324 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+import os 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "NJ.settings") 
+import django
+
+if django.VERSION >= (1, 7):#自动判断版本
+    django.setup()
+
+
+import xlrd
+import re
+import cx_Oracle
+
+from django.shortcuts import render
+from django.shortcuts import render_to_response
+from django.http.response import HttpResponse, HttpResponseRedirect
+from .models import *
+import datetime
+from django.utils import timezone
+from datetime import timedelta
+from django.db import connection,transaction
+from django.conf import settings
+from tupletolist import dictfetchall
+
+# Create your views here.
+def index(request,):
+    #timenow =  timezone.now()
+    now = datetime.datetime.now()
+    newnow = now.strftime("%Y-%m-%d")
+    addday = timedelta(days=30)
+    newrq = (now+addday).strftime("%Y-%m-%d")
+    cursor1 = connection.cursor()
+    #cursor.execute("select a.id,b.zh,c.pz pz,mc,je,round(a.je*100/b.zhje,2) zhzb,ifnull(rzzt,''),ifnull(ztpj,''),ifnull(zxpj,''),ifnull(qx,''),ifnull(syl,''),pzrq,dqrq,ifnull(synx,''),ifnull(lshzj,''),(case when a.dqrq <%s  then '1' else  '0' end ) ifgq,by1 from njfx_wdcp a,njfx_zh b,njfx_pz c where a.zh_id=b.id and a.pz_id=c.id and a.dqrq >%s",[newrq,newnow])
+    cursor1.execute("select a.id,b.zh,c.pz pz,mc,je,round(a.je*100/b.zhje,2) zhzb,rzzt,ztpj,zxpj,qx,syl,pzrq,dqrq,synx,lshzj,(case when a.dqrq <%s  then '1' else  '0' end ) ifgq,by1 from njfx_wdcp a,njfx_zh b,njfx_pz c where a.zh_id=b.id and a.pz_id=c.id and a.dqrq >%s",[newrq,newnow])
+
+    #col_names = [desc[0] for desc in cursor.description]
+    #print col_names
+    wdcp = cursor1.fetchall()
+    cursor1.close()
+    
+    #wdcp = dict(zip(col_names, wdcp))
+    #wdcp = Wdcp.objects.raw("select a.id,zh,c.pz pz,mc,je,round(a.je*100/b.zhje,2) zhzb,rzzt,ztpj,zxpj,qx, syl,dqrq,synx,by1,lshzj,pzrq,(case when a.dqrq <%s  then '1' else  '0' end ) ifgq from njfx_wdcp a,njfx_zh b,njfx_pz c where a.zh_id=b.id and a.pz_id=c.id and a.dqrq >%s",[newrq,newnow])
+    #wdcp = Wdcp.objects.raw('select id,zh,pz,mc,je,zhzb,rzzt,ztpj,zxpj,qx,syl,dqrq,synx,by1,lshzj,pzrq from njfx_wdcp where dqrq > %s',[newrq]) 
+    cursor2 = connection.cursor()
+    cursor2.execute("select count(id) gqcount from njfx_wdcp where dqrq < %s and dqrq > %s",[newrq,newnow])
+    gqcount = cursor2.fetchall()
+    #gc = gqcount[0].gqcount
+    cursor2.close()
+
+    print gqcount
+    
+    return render_to_response('index.html', {'wdcp':wdcp,'gqcount':gqcount})
+def hz(request):
+    now = datetime.datetime.now()
+    newnow = now.strftime("%Y-%m-%d")
+    #各有效组合的总金额
+    cursor1 = connection.cursor()
+    cursor1.execute('select round(sum(b.zhje),2) zh from njfx_zh b where b.id in (select zh_id from njfx_wdcp a where a.dqrq>%s )',[newnow])
+    zh_temp = cursor1.fetchone()
+    cursor1.close()
+    #zh = Wdcp.objects.raw('select b.zh, round(sum(b.zhje),2) zh1 from njfx_zh b where b.zh in (select zh_id from njfx_wdcp a where a.dqrq> %s )',[newnow])
+    #test1 = zh[0].zh    
+    zh = zh_temp[0]
+    print zh
+    # 各组合所占比例
+    cursor2 = connection.cursor()
+    cursor2.execute('select b.zh,sum(a.je) hzje, round(sum(a.je)*100/%s,2) zhzb,sum(a.lshzj) hzlshzj from  njfx_wdcp a,njfx_zh b where  a.dqrq>%s and b.id=a.zh_id group by b.zh',[zh,newnow])
+    zhhz = cursor2.fetchall()
+    cursor2.close()
+    #各品种所占比例
+    cursor3  = connection.cursor()
+    cursor3.execute('select b.pz,sum(a.je) hzje,round(sum(a.je)*100/%s,2) zhzb,sum(lshzj) hzlshzj from njfx_wdcp a,njfx_pz b where a.pz_id=b.id and  dqrq > %s group by a.pz_id ',[zh,newnow])
+    pzhz = zhhz = cursor3.fetchall()
+    cursor3.close()
+    return render_to_response('hz.html',{'zhhz':zhhz,'pzhz':pzhz})
+def excel(request):
+     #excel读工具
+    
+    data= xlrd.open_workbook('media/1.xls') #打开文件
+    table = data.sheet_by_index(0) #获取工作表
+    nrows = table.nrows #行数
+    ncols = table.ncols #列数
+    colnames =  table.row_values(2)
+    sheetdata =[]
+    #print nrows,ncols,colnames
+    for r in xrange(0,nrows):
+        sheetdata.append(table.row_values(r))
+    print r,'====',sheetdata
+    return render_to_response('njtzfx.html',{'colnames':sheetdata})
+def data_import(request):
+    if request.method == 'POST':  
+        file_obj = request.FILES.getlist('upfile', None)        
+        if file_obj == None:
+            return HttpResponse('xxx')
+        else:
+            #fname= file_obj.name
+            cursor1 = connection.cursor() 
+            b1= '归因分析表'
+            b2= '资产分布表'
+            b3='资产情况表'
+            for f in file_obj:
+                fname = f.name
+                blx1 = re.findall(b1, fname) # 表类型判断
+                blx2 = re.findall(b2, fname)
+                blx3 = re.findall(b3, fname)
+                if blx1:   # 归因分析表
+                    strsql = 'insert into NJFX_gyfx(ksrq,jsrq,tgh,zh,zclb,zcmc,sye1_bqlj,sye1_bqsyzb,sye1_bnlj,sye1_bnsyzb,sye2_bqlj,sye2_bnlj,tzsyl_bqlj,tzsyl_bnlj,drrq) values('
+                    wb = xlrd.open_workbook(filename=None,file_contents=f.read())
+                    table = wb.sheet_by_index(0) #获取工作表
+                    nrows = table.nrows #行数
+                    ncols = table.ncols #列数
+                    tgh = table.cell(1,5).value
+                    zh = table.cell(1,6).value
+                    rq = table.cell(1,3).value
+                    ksrq = rq[0:11]
+                    jsrq = rq[-11:]
+                    print ksrq,jsrq
+                    cursordel = connection.cursor() # 清楚重复数据
+                    cursordel.execute('delete from NJFX_gyfx where ksrq =%s and jsrq = %s and zh= %s',[ksrq,jsrq,zh]) 
+                    cursordel.close()
+                    print ksrq,'|||||',jsrq
+                    data = ''
+                    sql1 = ''
+                    nrownonullnum = 0
+                    
+                    
+                    for n in range(4,nrows): #从第五行开始读
+                        if table.cell(n,0).value != '': #处理合并单元格问题
+                            nrownonullnum =n
+                        for c in range(0,10):  
+                            if  n > 4 and c== 0 and table.cell(n,c).value == '':
+                                celldata = table.cell(nrownonullnum,0).value 
+                                #print 'null',n,k,c,nrownonullnum,celldata                               
+                            else:                                
+                                celldata = table.cell(n,c).value
+                                #print n,k,c,nrownonullnum,celldata 
+                                #print n,k,c,celldata                
+                            data += '\'%s\',' %(celldata) 
+                            now = datetime.datetime.now()
+                            now = str(now)[:-7]
+                            import_time = '\'%s\'' %(now) 
+                            print import_time
+                                 
+                            # #去掉最后一个；号
+                        
+                        sql1 = strsql+'\''+ksrq+'\','+'\''+jsrq+'\','+'\''+tgh+'\','+'\''+zh+'\','+data +import_time+')' 
+                        data = '' 
+                        print n,'-------------->',sql1         
+                        cursor1.execute(sql1)                            
+                        #cursor1.commit;                         
+                        sql1 ='' 
+                                    
+                elif blx2:  #资产分布表
+                    strsql = 'insert into NJFX_zcfbb(rq, zh, zclb, zcmc, sz, zjzcbl,drrq) values('
+                    wb = xlrd.open_workbook(filename=None,file_contents=f.read())
+                    table = wb.sheet_by_index(0) #获取工作表
+                    nrows = table.nrows #行数
+                    ncols = table.ncols #列数
+                    #tgh = table.cell(1,5).value
+                    zh = table.cell(1,1).value
+                    rq = table.cell(1,0).value
+                    #ksrq = rq[0:11]
+                    #jsrq = rq[-11:]
+                    
+                    #print rq,'|||||',zh
+                    data = ''
+                    sql1 = ''
+                    nrownonullnum = 0
+                    cursordel = connection.cursor() # 清楚重复数据
+                    cursordel.execute('delete from NJFX_zcfbb where rq =%s  and zh= %s',[rq,zh]) 
+                    cursordel.close()
+                    
+                    for n in range(3,nrows-1): #从第四行开始读
+                        if table.cell(n,0).value != '': #处理合并单元格问题
+                            nrownonullnum =n
+                        if table.cell(n,4).value != '': #处理合并单元格问题
+                            nrownonullnum1 =n
+                        for c in range(0,4):  
+                            if  n > 3 and c== 0 and table.cell(n,c).value == '':
+                                celldata = table.cell(nrownonullnum,0).value 
+                                #print 'null',n,k,c,nrownonullnum,celldata 
+                            #elif n > 3 and c== 4 and table.cell(n,c).value == '':
+                            #    celldata = table.cell(nrownonullnum1,4).value 
+                                            
+                            else:                                
+                                celldata = table.cell(n,c).value
+                                #print n,k,c,nrownonullnum,celldata 
+                                #print n,k,c,celldata                
+                            data += '\'%s\',' %(celldata)        
+                        now = datetime.datetime.now()
+                        now = str(now)[:-7]
+                        import_time = '\'%s\'' %(now) 
+                        #print import_time
+                        
+                        sql1 = strsql+'\''+rq+'\','+'\''+zh+'\','+data +import_time+')' 
+                        data = '' 
+                        print sql1         
+                        try:
+                            cursor1.execute(sql1)                            
+                        #cursor1.commit;                         
+                        finally:
+                            sql1 =''                                                    
+                    #print sql2
+                elif blx3:  #处理资产情况表
+                    strsql = 'insert into NJFX_zcqkb(rq, tzzhdm, zhmc, dwjz, stzcjz, zcfe, wtje, jsy,drrq) values('
+                    wb = xlrd.open_workbook(filename=None,file_contents=f.read())
+                    table = wb.sheet_by_index(0) #获取工作表
+                    nrows = table.nrows #行数
+                    ncols = table.ncols #列数
+                    data = ''
+                    sql1 = ''
+                    rq = table.cell(2, 0).value
+                    print rq
+                    cursordel = connection.cursor() # 清楚重复数据
+                    cursordel.execute('delete from NJFX_zcqkb where rq =%s', [rq]) 
+                    cursordel.close()
+                    
+                    for n in range(4,nrows): #从第四行开始读
+                        if table.cell(n, 0).ctype == 3: # 3 means 'xldate' , 1 means 'text'
+                            # Correct option 1
+                            ms_date_number = table.cell(n,0).value # Correct option 2                        
+                            year, month, day, hour, minute, second = xlrd.xldate_as_tuple(ms_date_number,wb.datemode)
+                            py_date = datetime.datetime(year, month, day)
+                            rq = str(py_date)[0:10]
+                            print rq,py_date
+                        for c in range(1,ncols):  
+                            celldata = table.cell(n,c).value
+                            #print celldata
+                                #print n,k,c,nrownonullnum,celldata 
+                                #print n,k,c,celldata                
+                            data += '\'%s\',' %(celldata)        
+                        now = datetime.datetime.now()
+                        now = str(now)[:-7]
+                        import_time = '\'%s\'' %(now) 
+                        #print import_time
+                        #print data
+                        sql1 = strsql+'\''+rq+'\','+data +import_time+')' 
+                        data = '' 
+                        print sql1         
+                        try:
+                            cursor1.execute(sql1)                            
+                        #cursor1.commit;                         
+                        finally:
+                            sql1 ='' 
+                    else:
+                        pass                       
+            cursor1.close()           
+             
+                    
+            sql1 = ''               
+            return HttpResponseRedirect('/tghsj/zcqkb/?rq='+rq)
+    else:
+        return render_to_response('sjdr.html', {})
+def tghsj(request):
+    rq = request.GET['rq']
+    cursorzcqkb = connection.cursor() #资产情况表
+    cursorzcqkb.execute('select rq, tzzhdm, zhmc, dwjz, stzcjz, zcfe, wtje, jsy, drrq from njfx_zcqkb ')
+    njfx_zcqkb = cursorzcqkb.fetchall()
+    cursorzcqkb.close()
+    
+    cursorgyfxb = connection.cursor() #资产情况表
+    cursorgyfxb.execute('select  ksrq, jsrq,zh, zclb, zcmc, sye1_bqlj, sye1_bqsyzb, sye1_bnlj, sye1_bnsyzb, sye2_bqlj, sye2_bnlj, tzsyl_bqlj, tzsyl_bnlj, drrq from njfx_gyfx')
+    njfx_gyfxb = cursorgyfxb.fetchall()
+    cursorgyfxb.close()
+    
+    cursorzcfbb = connection.cursor() #资产情况表
+    cursorzcfbb.execute('select  rq, zh, zclb, zcmc, sz, zjzcbl,  drrq from njfx_zcfbb')
+    njfx_zcfbb = cursorzcfbb.fetchall()
+    cursorzcfbb.close()
+    
+    return render_to_response('tghsj.html',{'zcqkb':njfx_zcqkb,'gyfxb':njfx_gyfxb,'zcfbb':njfx_zcfbb})
+def Tzqkfx(request):
+    now = datetime.datetime.now()
+    newnow = now.strftime("%Y-%m-%d")
+    #各有效组合的总金额
+    cursor = connection.cursor()
+    cursor.execute('''select substr(t.zhmc,6) zhmc,round(t.wtje/10000,2),round(t1.yhck/10000,2),round(t2.zqnhg/10000,2),round(t3.qthbjj/10000,2),round((t1.yhck+t2.zqnhg+t3.qthbjj)/10000,2) hblxj,round((t1.yhck+t2.zqnhg+t3.qthbjj)*100/t.stzcjz,2) hblzb,round(t4.hblsr/10000,2),round(t4.hblsr*100/(t4.hblsr+t9.gdlsr+t12.qylsr),2) hblsrzb,
+round(t5.xdg/10000,2),round(t6.wcp/10000,2),round(t7.qyz/10000,2),round(t8.qtgdl/10000,2),round((t5.xdg+t6.wcp+t7.qyz+t8.qtgdl)/10000,2) gdlxj,round((t5.xdg+t6.wcp+t7.qyz+t8.qtgdl)/t.stzcjz,2) gdlzb,round(t9.gdlsr/10000,2),round(t9.gdlsr/(t4.hblsr+t9.gdlsr+t12.qylsr),2) gdlsrzb,
+round(t10.gp/10000,2),round(t11.gpjj/10000,2),round((t10.gp+t11.gpjj)/10000,2) qylxj,round((t10.gp+t11.gpjj)/t.stzcjz,2) qylzb,round(t10.gp/t.stzcjz,2) gpzb,round(t12.qylsr/10000,2),round(t12.qylsr/(t4.hblsr+t9.gdlsr+t12.qylsr),2) qylsrzb,
+round(t.stzcjz/10000,2), round((t4.hblsr+t9.gdlsr+t12.qylsr)/10000,2) srhj,round(t13.sndljlr/10000,2) ,round((t.stzcjz-t.wtje-t13.sndljlr)/10000,2) bnlr,round((t.stzcjz-t.wtje)/10000,2)  ljlr,round(t14.sndwjz/10000,2), round(t15.sqdwjz/10000,2),round(t.dwjz/10000,2),round((t.dwjz-t15.sqdwjz)/10000,2)  bqjzzjbd,round(t.dwjz/t14.sndwjz,2)-1 bnsyl,'' jz,'' ljpm,'' bnpm  
+from NJFX_ZCQKB t 
+       left join (select tn.zh ,sum(tn.sz) yhck from njfx_zcfbb tn where  tn.zcmc in ('银行活期存款','应收证券清算款','清算备付金') group by tn.zh) t1
+       on t.zhmc =t1.zh
+       left join (select tn.zh ,sum(tn.sz) zqnhg from njfx_zcfbb tn where  tn.zcmc in ('买入返售金融资产') group by tn.zh) t2
+       on t.zhmc = t2.zh
+       left join (select tn.zh ,sum(is_number(tn.sz)) qthbjj from njfx_zcfbb tn where  tn.zcmc in ('中央银行票据','货币市场基金','货币型养老金产品','其他流动性资产') group by tn.zh) t3
+       on t.zhmc = t3.zh
+       left join (select njfx1.zh,njfx1.bnlj_temp-njfx2.dqck_xyck hblsr from 
+                 (select NJFX_GYFX.zh,sum(NJFX_GYFX.sye1_bnlj) bnlj_temp from NJFX_GYFX  where NJFX_GYFX.zclb in ('流动性资产合计','其他收入合计') group by NJFX_GYFX.zh) njfx1,
+                 (select NJFX_GYFX.zh,sum(NJFX_GYFX.sye1_bnlj) dqck_xyck from NJFX_GYFX  where NJFX_GYFX.zcmc in ('一年期以内（含一年）定期存款或协议存款') group by NJFX_GYFX.zh）njfx2
+        where njfx1.zh=njfx2.zh) t4
+        on t.zhmc = t4.zh
+        left join (select njfx_zcfbb.zh,sum(is_number(njfx_zcfbb.sz)) xdg from njfx_zcfbb where njfx_zcfbb.zcmc in ('一年期以内（含一年）定期存款或协议存款','一年期以上定期存款/协议存款','国债','金融债') group by njfx_zcfbb.zh) t5
+        on t.zhmc= t5.zh
+        left join (select njfx_zcfbb.zh,sum(is_number(njfx_zcfbb.sz)) wcp from njfx_zcfbb where njfx_zcfbb.zcmc in ('保险产品（万能保险、股票投资比例≤30%的投资连结保险）','商业银行理财产品','信托产品','特定资产管理计划','基础设施债权投资计划','固定收益型养老金产品') group by njfx_zcfbb.zh) t6
+        on t.zhmc= t6.zh
+         left join (select njfx_zcfbb.zh,sum(is_number(njfx_zcfbb.sz)) qyz from njfx_zcfbb where njfx_zcfbb.zcmc in ('企业（公司）债','短期融资券','中期票据','可转换债','基础设施债权投资计划','固定收益型养老金产品') group by njfx_zcfbb.zh) t7
+        on t.zhmc= t7.zh
+         left join (select njfx_zcfbb.zh,sum(is_number(njfx_zcfbb.sz)) qtgdl from njfx_zcfbb where njfx_zcfbb.zcmc in ('债券基金','混合型养老金产品','其他固定收益类资产') group by njfx_zcfbb.zh) t8
+        on t.zhmc= t8.zh
+        left join (select NJFX_GYFX.zh,sum(NJFX_GYFX.sye1_bnlj) gdlsr from NJFX_GYFX  where NJFX_GYFX.zclb='固定收益类资产合计' or NJFX_GYFX.Zcmc='一年期以内（含一年）定期存款或协议存款' group by NJFX_GYFX.zh) t9
+        on t.zhmc=t9.zh
+        left join (select njfx_zcfbb.zh,sum(is_number(njfx_zcfbb.sz)) gp from njfx_zcfbb where njfx_zcfbb.zcmc in ('股票') group by njfx_zcfbb.zh) t10
+        on t.zhmc= t10.zh
+        left join (select njfx_zcfbb.zh,sum(is_number(njfx_zcfbb.sz)) gpjj from njfx_zcfbb where njfx_zcfbb.zcmc in ('股票基金、混合基金','投资连结保险产品（股票投资比例＞30%）','权证（非直接投资）','权益工具','股票型养老金产品','其他权益类资产') group by njfx_zcfbb.zh) t11
+        on t.zhmc= t11.zh
+        left join (select NJFX_GYFX.zh,sum(NJFX_GYFX.sye1_bnlj) qylsr from NJFX_GYFX  where NJFX_GYFX.zclb in ('权益类资产合计') group by NJFX_GYFX.zh) t12
+        on t.zhmc= t12.zh
+        ---上年底累计利润
+        left join (select zh,sndljlr from njfx_sndnjfx ) t13 
+        on t.zhmc = t13.zh
+        --上年单位净值
+        left join (select zh,sndwjz from njfx_sndwjz ) t14 
+        on t.zhmc = t14.zh
+        --上期单位净值
+        left join (select zh,sqdwjz from njfx_sqdwjz ) t15 
+        on t.zhmc = t15.zh  order by zhmc
+        ''')
+    tzfx = cursor.fetchall()
+    
+    cursor.close()
+ 
+    return render_to_response('tzfx.html',{'tzfx':tzfx})    

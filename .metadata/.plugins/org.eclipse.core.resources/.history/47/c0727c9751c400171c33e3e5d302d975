@@ -1,0 +1,173 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models
+
+from django.utils.translation import ugettext_lazy as _
+
+
+
+
+
+
+# Create your models here.
+
+class Zh(models.Model):
+    id = models.AutoField(primary_key=True)
+    zh = models.CharField(max_length=20L,verbose_name = "组合",unique=True)
+    zhje = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True,verbose_name = "组合金额")
+    class Meta:
+        #db_table = 't_faq_category'
+        verbose_name = u'组合'
+        verbose_name_plural = u'组合'
+        
+        #app_label = u'My_Category'
+    def __unicode__(self):
+        return self.zh
+    
+class Pz(models.Model):
+    id = models.AutoField(primary_key=True)
+    pz = models.CharField(max_length=20L,verbose_name = "品种",unique=True)
+    class Meta:
+        #db_table = 't_faq_category'
+        verbose_name = u'品种'
+        verbose_name_plural = u'品种'
+        
+        #app_label = u'My_Category'
+    def __unicode__(self):
+        return self.pz
+    
+class Wdcp(models.Model):
+    id = models.AutoField(primary_key=True)
+    zh = models.ForeignKey(Zh,verbose_name = "组合")
+    pz = models.ForeignKey(Pz,verbose_name = "品种")
+    mc = models.CharField(max_length=100L,blank=True,null=True,verbose_name = "名称")
+    je = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True,verbose_name = "金额")
+    zhzb = models.DecimalField(max_digits=4, decimal_places=2,blank=True,null=True,verbose_name = "组合占比")
+    rzzt = models.CharField(max_length=20L, blank=True,null=True,verbose_name = "融资主体")
+    ztpj = models.CharField(max_length=20L, blank=True,null=True,verbose_name = "主体评级")
+    zxpj = models.CharField(max_length=20L, blank=True,null=True,verbose_name = "债项评级")
+    qx = models.CharField(max_length=20L, blank=True,null=True,verbose_name = "期限")
+    syl = models.DecimalField(max_digits=4, decimal_places=2,blank=True,null=True,verbose_name = "收益率")
+    pzrq = models.DateField(blank=True,null=True,  verbose_name = "配置日期")
+    dqrq = models.DateField(blank=True,null=True,verbose_name = "到期日期")
+    synx = models.DecimalField(max_digits=4, decimal_places=2,blank=True,null=True,verbose_name = "剩余年限")
+    lshzj = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True,verbose_name = "理事会资金")
+    by1 = models.CharField(max_length=20L, blank=True,null=True,verbose_name = "备用字段")
+    
+    class Meta:
+        #db_table = 't_faq_category'
+        verbose_name = u'稳定类产品'
+        verbose_name_plural = u'稳定类产品'
+        unique_together = ('mc','pzrq')
+        #app_label = u'My_Category'
+    def __unicode__(self):
+        return self.mc
+    
+class NjfxGyfx(models.Model):
+    id = models.AutoField(primary_key=True)
+    ksrq = models.CharField(max_length=15, blank=True, null=True)
+    jsrq = models.CharField(max_length=15, blank=True, null=True)
+    tgh = models.CharField(max_length=5, blank=True, null=True)
+    zclb = models.CharField(max_length=30)
+    zcmc = models.CharField(max_length=50)
+    sye1_bqlj = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    sye1_bqsyzb = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    sye1_bnlj = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    sye1_bnsyzb = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    sye2_bqlj = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    sye2_bnlj = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    tzsyl_bqlj = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True) # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    tzsyl_bnlj = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    zh = models.CharField(max_length=10, blank=True, null=True)
+    drrq = models.CharField(max_length=20, blank=True, null=True)
+
+    class Meta:
+        
+        db_table = 'NJFX_gyfx'
+        unique_together = ('zcmc','ksrq','zh','zclb')
+    def __unicode__(self):
+        return self.tgh
+    
+class NjfxZcFbb(models.Model):
+    id = models.AutoField(primary_key=True)
+    rq = models.CharField(max_length=15, blank=True, null=True)
+    zh = models.CharField(max_length=10, blank=True, null=True)
+    #tgh = models.CharField(max_length=5, blank=True, null=True)
+    zclb = models.CharField(max_length=30)
+    zcmc = models.CharField(max_length=50)
+    sz = models.CharField(max_length=30,blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    zjzcbl = models.DecimalField(max_digits=25, decimal_places=15, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    zjzcblhj = models.DecimalField(max_digits=25, decimal_places=15, blank=True, null=True)
+    drrq = models.CharField(max_length=20, blank=True, null=True)
+    class Meta:     
+        db_table = 'NJFX_ZcFbb'
+        unique_together = ('rq','zh','zcmc','zclb')
+    def __unicode__(self):
+        return self.zh
+class NjfxZcQkb(models.Model):
+    id = models.AutoField(primary_key=True)
+    rq = models.CharField(max_length=15)
+    tzzhdm = models.CharField(max_length=15)
+    #tgh = models.CharField(max_length=5, blank=True, null=True)
+    zhmc = models.CharField(max_length=30)
+    
+    dwjz = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    stzcjz = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    zcfe = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    wtje = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    jsy = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    drrq = models.CharField(max_length=20, blank=True, null=True)
+    class Meta:     
+        db_table = 'NJFX_ZcQkb'
+        unique_together = ('rq','tzzhdm')
+    def __unicode__(self):
+        return self.zhmc
+class NjfxTzqkfx(models.Model):
+    id = models.AutoField(primary_key=True)
+    rq = models.CharField(max_length=15, blank=True, null=True,verbose_name='日期')
+    zhmc = models.ForeignKey(Zh,verbose_name = "组合")
+    #tgh = models.CharField(max_length=5, blank=True, null=True)
+    bj = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='本金')
+    hblzc_yhck = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='货币类-银行存款')
+    hblzc_zqnhg =  models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='货币类-债券逆逆回购')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    hblzc_qthbjj = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='货币类-其它货币基金')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    hblzc_hblxj = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='货币类-货币类小计')
+    hblzc_zjzbl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='货币类-占净值比列')
+    hblzc_sr = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='货币类-收入')
+    hblzc_bl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='货币类-比列')
+    gdlzc_xdg = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='固定类-协议/定期存款/国债')
+    gdlzc_wcp =  models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='固定类-23/24号文产品')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    gdlzc_qyz = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='固定类-企业债')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    gdlzc_qtgdl = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='固定类-其他固定类')
+    gdlzc_gdlxj = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='固定类-固定类小计')
+    gdlzc_zjzbl = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='固定类-占净值比例')
+    gdlzc_sr = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='固定类-收入')
+    gdlzc_bl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='固定类-比列') 
+    qylzc_gp = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='权益类-股票')
+    qylzc_gqjj =  models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='权益类-股票基金')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    qylzc_qylxj = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='权益类-权益类小计')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    qylzc_zjzbl = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='权益类-占净值比列')
+    qylzc_gpbl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='权益类-股票比列')
+    qylzc_sr = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='权益类-收入')
+    qylzc_bl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='权益类-比列')      
+    jjjzc = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='基金净资产')  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
+    srhj = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='收入合计')
+    jzsnljlr = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='截止上年底累计利润')
+    bnlr = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='本年利润')
+    ljlr = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='累计利润')
+    sqdwjz = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='上期单位净值')
+    bqdwjz = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='本期单位净值')
+    bqjzbd = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True,verbose_name='上期净值增减变动')
+    bqsyl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='本期收益率')
+    jzl = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True,verbose_name='基准率')
+    ljpm = models.IntegerField(blank=True, null=True,verbose_name='累计排名')
+    bnpm = models.IntegerField(blank=True, null=True,verbose_name='本年排名')
+    drrq = models.CharField(max_length=20, blank=True, null=True,verbose_name='导入日期')
+    class Meta:
+        verbose_name = u'投资情况分析表'
+        verbose_name_plural = u'投资情况分析表'     
+        db_table = 'Njfx_Tzqkfx'
+        unique_together = ('rq','zhmc')
+    def __unicode__(self):
+        return self.zh

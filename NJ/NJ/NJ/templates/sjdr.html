@@ -1,0 +1,13 @@
+{% extends 'base.html'%} 
+ 
+{% block content %}
+  <!-- Content -->
+<!--  <div id="content" class="flex"> -->
+  <form enctype="multipart/form-data" action="" method="POST">
+      <input type="file" multiple="multiple" id="upfile" name='upfile' /><input type="submit" onclick="ReadExcel();" value="read">  
+	  </form>
+<p>注意：此处导入的表名应包含1、归因分析；2、资产分布；3、资产情况；4、日均持仓；5、TA；6、收益率；7、净值  等字眼</p>
+	  {% for x in filename %} {{x}}{% endfor %}
+<!--</div> -->
+{% endblock %}
+

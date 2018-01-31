@@ -1,0 +1,29 @@
+
+<tr>
+   <td bgcolor="#F4F4F4" style="padding-left:17px"><table width="160" border="0" cellspacing="0" cellpadding="0">
+       <tr>
+         <td>
+	         {%for item in announces%}
+	         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+	             <tr>
+	               <td width="17" align="left" valign="middle"><img src="/static/img/main/bullet.gif" width="17" height="10" /></td>
+	               <td width="147" align="left" valign="middle"><strong>{{item.createddate|date:"Y-m"}} </strong></td>
+	             </tr>
+	             <tr>
+	               <td colspan="2"><img src="/static/img/main/lef_dot.gif" width="164" height="2" /></td>
+	             </tr>
+	             <tr>
+	               <td colspan="2" style="padding-left:9px">
+	               {{item.content}}
+	               </td>
+	             </tr>
+	         </table>
+	         {%endfor%}
+         </td>
+       </tr>       
+       <tr>
+         <td height="23" align="right" valign="top"><img src="/static/img/main/btn_more.gif" width="50" height="16" border="0" /></td>
+       </tr>
+   </table>
+   </td>
+</tr>
